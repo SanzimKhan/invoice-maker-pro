@@ -47,6 +47,11 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        invoice: {
+          header: "hsl(var(--invoice-header))",
+          text: "hsl(var(--invoice-text))",
+          border: "hsl(var(--invoice-border))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
