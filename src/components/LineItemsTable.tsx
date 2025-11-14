@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Minus, Trash2 } from "lucide-react";
 import { InvoiceData, LineItem } from "@/pages/Index";
+import { useEffect } from "react";
 
 interface LineItemsTableProps {
   invoiceData: InvoiceData;
@@ -10,6 +11,20 @@ interface LineItemsTableProps {
 }
 
 const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) => {
+  // Calculate invoice totals whenever line items change
+  useEffect(() => {
+    const subtotal = invoiceData.lineItems.reduce((sum, item) => sum + item.amount, );
+    const totalProfit = invoiceData.lineItems.reduce((sum, item) => sum + item.profit, 0);
+    const total = subtotal;
+
+    setInvoiceData({
+      ...invoiceData,
+      subtotal,
+      totalProfit,
+      total,
+    });
+  }, [invoiceData.lineItems]); // Re-run when line items change
+
   const addLineItem = () => {
     const newItem: LineItem = {
       id: Date.now().toString(),
@@ -40,18 +55,33 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
     const updatedItems = invoiceData.lineItems.map((item) => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
-        if (field === "quantity" || field === "sellingPrice") {
+        
+        // Recalculate amount and profit when relevant fields change
+        if (field === "quantity" || field === "sellingPrice" || field === "buyingPrice") {
           updatedItem.amount = updatedItem.quantity * updatedItem.sellingPrice;
           updatedItem.profit = (updatedItem.sellingPrice - updatedItem.buyingPrice) * updatedItem.quantity;
         }
-        if (field === "buyingPrice") {
-          updatedItem.profit = (updatedItem.sellingPrice - updatedItem.buyingPrice) * updatedItem.quantity;
-        }
+        
         return updatedItem;
       }
       return item;
     });
+    
     setInvoiceData({ ...invoiceData, lineItems: updatedItems });
+  };
+
+  const incrementQuantity = (id: string) => {
+    const item = invoiceData.lineItems.find(item => item.id === id);
+    if (item) {
+      updateLineItem(id, "quantity", item.quantity + 1);
+    }
+  };
+
+  const decrementQuantity = (id: string) => {
+    const item = invoiceData.lineItems.find(item => item.id === id);
+    if (item && item.quantity > 1) {
+      updateLineItem(id, "quantity", item.quantity - 1);
+    }
   };
 
   return (
@@ -62,7 +92,7 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
             <tr className="border-b border-border">
               <th className="text-left py-2 px-2 text-sm font-semibold text-muted-foreground">Description</th>
               <th className="text-center py-2 px-2 text-sm font-semibold text-muted-foreground w-20">Service</th>
-              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-20">Qty</th>
+              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-32">Qty</th>
               <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Buying (৳)</th>
               <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Selling (৳)</th>
               <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Profit (৳)</th>
@@ -90,14 +120,35 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
                   </div>
                 </td>
                 <td className="py-2 px-2">
-                  <Input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={item.quantity}
-                    onChange={(e) => updateLineItem(item.id, "quantity", parseFloat(e.target.value) || 0)}
-                    className="text-right h-9"
-                  />
+                  <div className="flex items-center justify-end gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => decrementQuantity(item.id)}
+                      disabled={item.quantity <= 1}
+                      className="h-7 w-7"
+                    >
+                      <Minus className="h-3 w-3" />
+                    </Button>
+                    <Input
+                      type="number"
+                      min="1"
+                      step="1"
+                      value={item.quantity}
+                      onChange={(e) => updateLineItem(item.id, "quantity", parseFloat(e.target.value) || 1)}
+                      className="text-right h-9 w-16"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => incrementQuantity(item.id)}
+                      className="h-7 w-7"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </td>
                 <td className="py-2 px-2">
                   <Input
