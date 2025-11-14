@@ -7,9 +7,12 @@ import { Printer, FileText } from "lucide-react";
 export interface LineItem {
   id: string;
   description: string;
+  isService: boolean;
   quantity: number;
-  rate: number;
+  buyingPrice: number;
+  sellingPrice: number;
   amount: number;
+  profit: number;
 }
 
 export interface InvoiceData {
@@ -25,8 +28,10 @@ export interface InvoiceData {
   clientPhone: string;
   clientEmail: string;
   lineItems: LineItem[];
+  discountPercent: number;
   taxRate: number;
   notes: string;
+  previousProduct: string;
 }
 
 const Index = () => {
@@ -34,8 +39,8 @@ const Index = () => {
     invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
     invoiceDate: new Date().toISOString().split('T')[0],
     dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    companyName: "",
-    companyAddress: "",
+    companyName: "BOT Engineers",
+    companyAddress: "1/10, North South Road, A Block, Banasree",
     companyPhone: "",
     companyEmail: "",
     clientName: "",
@@ -43,10 +48,12 @@ const Index = () => {
     clientPhone: "",
     clientEmail: "",
     lineItems: [
-      { id: "1", description: "", quantity: 1, rate: 0, amount: 0 }
+      { id: "1", description: "", isService: false, quantity: 1, buyingPrice: 0, sellingPrice: 0, amount: 0, profit: 0 }
     ],
+    discountPercent: 0,
     taxRate: 0,
     notes: "",
+    previousProduct: "",
   });
 
   const handlePrint = () => {
@@ -59,7 +66,7 @@ const Index = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="h-6 w-6 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Invoice Creator</h1>
+            <h1 className="text-2xl font-bold text-foreground">BOT Engineers Invoice</h1>
           </div>
           <Button onClick={handlePrint} className="gap-2">
             <Printer className="h-4 w-4" />

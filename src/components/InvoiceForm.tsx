@@ -33,15 +33,15 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="taxRate">Tax Rate (%)</Label>
+              <Label htmlFor="discountPercent">Discount (%)</Label>
               <Input
-                id="taxRate"
+                id="discountPercent"
                 type="number"
                 min="0"
                 max="100"
                 step="0.01"
-                value={invoiceData.taxRate}
-                onChange={(e) => updateField("taxRate", parseFloat(e.target.value) || 0)}
+                value={invoiceData.discountPercent}
+                onChange={(e) => updateField("discountPercent", parseFloat(e.target.value) || 0)}
                 placeholder="0"
               />
             </div>
@@ -66,6 +66,15 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
               />
             </div>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="previousProduct">Previous Product/Invoice Reference</Label>
+            <Input
+              id="previousProduct"
+              value={invoiceData.previousProduct}
+              onChange={(e) => updateField("previousProduct", e.target.value)}
+              placeholder="Reference to previous product or invoice"
+            />
+          </div>
         </CardContent>
       </Card>
 
@@ -80,7 +89,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
               id="companyName"
               value={invoiceData.companyName}
               onChange={(e) => updateField("companyName", e.target.value)}
-              placeholder="Your Company Name"
+              placeholder="BOT Engineers"
             />
           </div>
           <div className="space-y-2">
@@ -89,7 +98,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
               id="companyAddress"
               value={invoiceData.companyAddress}
               onChange={(e) => updateField("companyAddress", e.target.value)}
-              placeholder="123 Business St, City, State ZIP"
+              placeholder="1/10, North South Road, A Block, Banasree"
               rows={2}
             />
           </div>
@@ -100,7 +109,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
                 id="companyPhone"
                 value={invoiceData.companyPhone}
                 onChange={(e) => updateField("companyPhone", e.target.value)}
-                placeholder="(123) 456-7890"
+                placeholder="Phone number"
               />
             </div>
             <div className="space-y-2">
@@ -110,7 +119,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
                 type="email"
                 value={invoiceData.companyEmail}
                 onChange={(e) => updateField("companyEmail", e.target.value)}
-                placeholder="info@company.com"
+                placeholder="info@botengineers.com"
               />
             </div>
           </div>
@@ -137,7 +146,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
               id="clientAddress"
               value={invoiceData.clientAddress}
               onChange={(e) => updateField("clientAddress", e.target.value)}
-              placeholder="456 Client Ave, City, State ZIP"
+              placeholder="Client address"
               rows={2}
             />
           </div>
@@ -148,7 +157,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
                 id="clientPhone"
                 value={invoiceData.clientPhone}
                 onChange={(e) => updateField("clientPhone", e.target.value)}
-                placeholder="(098) 765-4321"
+                placeholder="Client phone"
               />
             </div>
             <div className="space-y-2">
@@ -167,7 +176,7 @@ const InvoiceForm = ({ invoiceData, setInvoiceData }: InvoiceFormProps) => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Line Items</CardTitle>
+          <CardTitle>Products & Services</CardTitle>
         </CardHeader>
         <CardContent>
           <LineItemsTable invoiceData={invoiceData} setInvoiceData={setInvoiceData} />

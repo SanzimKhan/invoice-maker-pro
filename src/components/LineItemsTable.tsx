@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
 import { InvoiceData, LineItem } from "@/pages/Index";
 
@@ -13,9 +14,12 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
     const newItem: LineItem = {
       id: Date.now().toString(),
       description: "",
+      isService: false,
       quantity: 1,
-      rate: 0,
+      buyingPrice: 0,
+      sellingPrice: 0,
       amount: 0,
+      profit: 0,
     };
     setInvoiceData({
       ...invoiceData,
@@ -32,12 +36,16 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
     }
   };
 
-  const updateLineItem = (id: string, field: keyof LineItem, value: string | number) => {
+  const updateLineItem = (id: string, field: keyof LineItem, value: string | number | boolean) => {
     const updatedItems = invoiceData.lineItems.map((item) => {
       if (item.id === id) {
         const updatedItem = { ...item, [field]: value };
-        if (field === "quantity" || field === "rate") {
-          updatedItem.amount = updatedItem.quantity * updatedItem.rate;
+        if (field === "quantity" || field === "sellingPrice") {
+          updatedItem.amount = updatedItem.quantity * updatedItem.sellingPrice;
+          updatedItem.profit = (updatedItem.sellingPrice - updatedItem.buyingPrice) * updatedItem.quantity;
+        }
+        if (field === "buyingPrice") {
+          updatedItem.profit = (updatedItem.sellingPrice - updatedItem.buyingPrice) * updatedItem.quantity;
         }
         return updatedItem;
       }
@@ -53,9 +61,12 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
           <thead>
             <tr className="border-b border-border">
               <th className="text-left py-2 px-2 text-sm font-semibold text-muted-foreground">Description</th>
-              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-24">Qty</th>
-              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-32">Rate</th>
-              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-32">Amount</th>
+              <th className="text-center py-2 px-2 text-sm font-semibold text-muted-foreground w-20">Service</th>
+              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-20">Qty</th>
+              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Buying (৳)</th>
+              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Selling (৳)</th>
+              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Profit (৳)</th>
+              <th className="text-right py-2 px-2 text-sm font-semibold text-muted-foreground w-28">Amount (৳)</th>
               <th className="w-12"></th>
             </tr>
           </thead>
@@ -69,6 +80,14 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
                     placeholder="Item description"
                     className="h-9"
                   />
+                </td>
+                <td className="py-2 px-2">
+                  <div className="flex justify-center">
+                    <Checkbox
+                      checked={item.isService}
+                      onCheckedChange={(checked) => updateLineItem(item.id, "isService", checked as boolean)}
+                    />
+                  </div>
                 </td>
                 <td className="py-2 px-2">
                   <Input
@@ -85,13 +104,26 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
                     type="number"
                     min="0"
                     step="0.01"
-                    value={item.rate}
-                    onChange={(e) => updateLineItem(item.id, "rate", parseFloat(e.target.value) || 0)}
+                    value={item.buyingPrice}
+                    onChange={(e) => updateLineItem(item.id, "buyingPrice", parseFloat(e.target.value) || 0)}
                     className="text-right h-9"
                   />
                 </td>
-                <td className="py-2 px-2 text-right font-medium">
-                  ${item.amount.toFixed(2)}
+                <td className="py-2 px-2">
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={item.sellingPrice}
+                    onChange={(e) => updateLineItem(item.id, "sellingPrice", parseFloat(e.target.value) || 0)}
+                    className="text-right h-9"
+                  />
+                </td>
+                <td className="py-2 px-2 text-right font-medium text-sm">
+                  ৳{item.profit.toFixed(2)}
+                </td>
+                <td className="py-2 px-2 text-right font-medium text-sm">
+                  ৳{item.amount.toFixed(2)}
                 </td>
                 <td className="py-2 px-2">
                   <Button
@@ -111,7 +143,7 @@ const LineItemsTable = ({ invoiceData, setInvoiceData }: LineItemsTableProps) =>
       </div>
       <Button onClick={addLineItem} variant="outline" className="w-full gap-2">
         <Plus className="h-4 w-4" />
-        Add Line Item
+        Add Product/Service
       </Button>
     </div>
   );

@@ -1,6 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import { InvoiceData } from "@/pages/Index";
+import botEngineersLogo from "@/assets/bot-engineers-logo.png";
 
 interface InvoicePreviewProps {
   invoiceData: InvoiceData;
@@ -8,8 +10,10 @@ interface InvoicePreviewProps {
 
 const InvoicePreview = ({ invoiceData }: InvoicePreviewProps) => {
   const subtotal = invoiceData.lineItems.reduce((sum, item) => sum + item.amount, 0);
-  const tax = subtotal * (invoiceData.taxRate / 100);
-  const total = subtotal + tax;
+  const discount = subtotal * (invoiceData.discountPercent / 100);
+  const afterDiscount = subtotal - discount;
+  const total = afterDiscount;
+  const totalProfit = invoiceData.lineItems.reduce((sum, item) => sum + item.profit, 0);
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "";
@@ -19,13 +23,19 @@ const InvoicePreview = ({ invoiceData }: InvoicePreviewProps) => {
 
   return (
     <Card className="p-8 bg-card shadow-lg print:shadow-none print:border-none">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-invoice-header mb-2">INVOICE</h1>
-        <div className="text-sm text-muted-foreground">
-          <p className="font-semibold">Invoice #: {invoiceData.invoiceNumber}</p>
+      {/* Header with Logo */}
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <img src={botEngineersLogo} alt="BOT Engineers" className="h-16 mb-2" />
+          <h1 className="text-3xl font-bold text-invoice-header">INVOICE</h1>
+        </div>
+        <div className="text-sm text-muted-foreground text-right">
+          <p className="font-semibold text-foreground">Invoice #: {invoiceData.invoiceNumber}</p>
           <p>Date: {formatDate(invoiceData.invoiceDate)}</p>
           <p>Due Date: {formatDate(invoiceData.dueDate)}</p>
+          {invoiceData.previousProduct && (
+            <p className="mt-2 text-xs">Ref: {invoiceData.previousProduct}</p>
+          )}
         </div>
       </div>
 
@@ -71,18 +81,26 @@ const InvoicePreview = ({ invoiceData }: InvoicePreviewProps) => {
           <thead>
             <tr className="border-b border-invoice-border">
               <th className="text-left py-3 text-sm font-semibold text-muted-foreground">Description</th>
+              <th className="text-center py-3 text-sm font-semibold text-muted-foreground">Type</th>
               <th className="text-right py-3 text-sm font-semibold text-muted-foreground">Qty</th>
-              <th className="text-right py-3 text-sm font-semibold text-muted-foreground">Rate</th>
-              <th className="text-right py-3 text-sm font-semibold text-muted-foreground">Amount</th>
+              <th className="text-right py-3 text-sm font-semibold text-muted-foreground">Rate (৳)</th>
+              <th className="text-right py-3 text-sm font-semibold text-muted-foreground">Amount (৳)</th>
             </tr>
           </thead>
           <tbody>
             {invoiceData.lineItems.map((item) => (
               <tr key={item.id} className="border-b border-invoice-border">
                 <td className="py-3 text-sm text-foreground">{item.description || "—"}</td>
+                <td className="py-3 text-center">
+                  {item.isService ? (
+                    <Badge variant="secondary" className="text-xs">Service</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-xs">Product</Badge>
+                  )}
+                </td>
                 <td className="py-3 text-sm text-right text-foreground">{item.quantity}</td>
-                <td className="py-3 text-sm text-right text-foreground">${item.rate.toFixed(2)}</td>
-                <td className="py-3 text-sm text-right font-medium text-foreground">${item.amount.toFixed(2)}</td>
+                <td className="py-3 text-sm text-right text-foreground">৳{item.sellingPrice.toFixed(2)}</td>
+                <td className="py-3 text-sm text-right font-medium text-foreground">৳{item.amount.toFixed(2)}</td>
               </tr>
             ))}
           </tbody>
@@ -91,19 +109,25 @@ const InvoicePreview = ({ invoiceData }: InvoicePreviewProps) => {
 
       {/* Totals */}
       <div className="flex justify-end mb-8">
-        <div className="w-64 space-y-2">
+        <div className="w-80 space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Subtotal:</span>
-            <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
+            <span className="font-medium text-foreground">৳{subtotal.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Tax ({invoiceData.taxRate}%):</span>
-            <span className="font-medium text-foreground">${tax.toFixed(2)}</span>
-          </div>
+          {invoiceData.discountPercent > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Discount ({invoiceData.discountPercent}%):</span>
+              <span className="font-medium text-destructive">-৳{discount.toFixed(2)}</span>
+            </div>
+          )}
           <Separator />
           <div className="flex justify-between text-lg font-bold">
             <span className="text-foreground">Total:</span>
-            <span className="text-invoice-header">${total.toFixed(2)}</span>
+            <span className="text-invoice-header">৳{total.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between text-sm pt-2 border-t border-muted">
+            <span className="text-muted-foreground">Total Profit:</span>
+            <span className="font-semibold text-accent">৳{totalProfit.toFixed(2)}</span>
           </div>
         </div>
       </div>
